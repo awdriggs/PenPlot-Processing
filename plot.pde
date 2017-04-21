@@ -5,7 +5,7 @@ Plotter plotter;  // Create a plotter object
 int val;          // Data received from the serial port, needed?
 
 //Enable plotting? //toggle for debug
-final boolean PLOTTING_ENABLED = true;
+final boolean PLOTTING_ENABLED = false;
 
 //Label
 String label = "TEST";
@@ -14,7 +14,7 @@ String label = "TEST";
 int xMin, yMin, xMax, yMax;
 
 void settings(){
- // Set paper size
+ // Set the paper size first, this allows the preview window to be in proportion
  // "A" = letter size, "B" = tabloid size, "A4" = metric A4, "A3" = metric A3
  setPaper("A");
  
@@ -24,7 +24,6 @@ void settings(){
  int screenWidth = (xMax - xMin)/20;
  int screenHeight = (yMax - yMin)/20;
  
- 
  //set the canvas size depending on the paper size that will be used... 
  size(screenWidth, screenHeight);
  println("screen dimensions", width, height);
@@ -32,40 +31,20 @@ void settings(){
 
 //Let's set this up
 void setup(){
-  
-  //Select a serial port
+ 
+  //select a serial port
   println(Serial.list()); //Print all serial ports to the console
+  
   String portName = Serial.list()[3]; //make sure you pick the right one
   println("Plotting to port: " + portName);
   
-  //Open the port
+  //open the port
   myPort = new Serial(this, portName, 9600);
 
-  //Associate with a plotter object
+  //create a plotter object, let the printer know the papersize
   plotter = new Plotter(myPort, xMin, yMin, xMax, yMax);
   
-  
-  //Initialize plotter
-  /*
-  plotter.write("IN;SP1;");
-  plotter.write("IP0,0,8236,10776;SC0,100,0,100;");
-  */
-  
-  //Draw a label first (this is pretty cool to watch)
-  //float ty = map(80, 0, height, yMin, yMax);
-  //plotter.write("PU"+xMax+","+ty+";"); //Position pen
-  //plotter.write("SI0.14,0.14;DI0,1;LB" + label + char(3)); //Draw label
-  
-  //Wait 0.5 second per character while printing label
-  
-  /*
-  if (PLOTTING_ENABLED) {
-    delay(label.length() * 500); 
-  }
-  */
-  
-  noLoop();
-    
+  noLoop(); //kill the loop, otherwise your print will never end, but maybe that's what you want ;)
 }
 
 void draw(){
@@ -85,15 +64,25 @@ void draw(){
   //plotter.write("SP0;");
   //plotter.write("PG;");
   
-  //test it!
-  plotter.selectPen(1);
-  line(0, height/2, width, height/2);
-  plotter.drawLine(0, height/2, width, height/2);
-  plotter.drawLine(0, 0, width, 0);
-  plotter.drawLine(0, height, width, height);
+  //test it! draws a li
   
-  plotter.selectPen(0);
- 
+  plotter.selectPen(1); //pick a pen
+  //line(0, height/2, width, height/2);
+  //plotter.drawLine(0, height/2, width, height/2);
+  //plotter.drawLine(0, 0, width, 0);
+  //plotter.drawLine(0, height, width, height);
+  //line(width/2, 0, width/2, height);
+  //plotter.drawLine(width/2, 0, width/2, height);
+  
+  PVector[] list = new PVector[3];
+  list[0] = new PVector(0, 0);
+  list[1] = new PVector(width/2, height/2);
+  list[2] = new PVector(width, 0);
+  
+  plotter.drawLines(list);
+  plotter.selectPen(0); //put the pen back
+   
+  println(plotter.convertY(height/2));
   //end the printing
   myPort.stop();
   //exit();
@@ -124,69 +113,4 @@ void setPaper(String size){
     } else {
       println("A valid paper size wasn't given to your Plotter object.");
     }
-}
-
-/*************************
-  Simple plotter class
-*************************/
-
-class Plotter {
-//properties
-  Serial port;
-  int xMin, yMin, xMax, yMax;
-  
-//constructer
-  Plotter(Serial _port, int _xMin, int _yMin, int _xMax, int _yMax){
-    port = _port;
-    xMin = _xMin;
-    yMin = _yMin;
-    xMax = _xMax;
-    yMax = _yMax;
-    
-    //init the printer
-    write("IN;");
-  }
-  
-//methods
-  void write(String hpgl){
-    if (PLOTTING_ENABLED){
-      port.write(hpgl);
-    }
-  }
-  
-  void write(String hpgl, int del){
-    if (PLOTTING_ENABLED){
-      port.write(hpgl);
-      delay(del);
-    }
-  }
-  
-  //select a pen
-  void selectPen(int slot) {
-    if (slot >= 0 && slot <= 6 ) {
-      write("SP" + slot + ";");
-    } else {
-      println("Your pen selection of " + 
-      slot + " isn't a valid pen slot. Using default pen instead.");    
-    }
-  }
-
-  //draw a line
-  void drawLine(float _x1, float _y1, float _x2, float _y2) {
-    //map input to paper size
-    float x1 = map(_x1, 0, width, xMin, xMax);
-    float y1 = map(_y1, 0, height, yMin, yMax);
-    float x2 = map(_x2, 0, width, xMin, xMax);
-    float y2 = map(_y2, 0, height, yMin, yMax);
-    
-    //pick up pen and go to x1, y1
-    write("PU" + x1 + "," + y1 + ";");
-    
-    //put down pen and go to x2, y2
-    write("PD" + x2 + "," + y2 + ";");
-    
-    //pick up pen
-    write("PU;");
-  }
-  
 }
