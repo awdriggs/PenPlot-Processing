@@ -5,7 +5,7 @@ Plotter plotter;  // Create a plotter object
 int val;          // Data received from the serial port, needed?
 
 //Enable plotting? //toggle for debug
-final boolean PLOTTING_ENABLED = false;
+final boolean PLOTTING_ENABLED = true;
 
 //Label
 String label = "TEST";
@@ -72,14 +72,14 @@ void draw(){
   //plotter.drawLine(0, 0, width, 0);
   //plotter.drawLine(0, height, width, height);
   //line(width/2, 0, width/2, height);
-  //plotter.drawLine(width/2, 0, width/2, height);
+  plotter.drawLine(width/2, 0, width/2, height);
   
-  PVector[] list = new PVector[3];
-  list[0] = new PVector(0, 0);
-  list[1] = new PVector(width/2, height/2);
-  list[2] = new PVector(width, 0);
+  //PVector[] list = new PVector[3];
+  //list[0] = new PVector(0, 0);
+  //list[1] = new PVector(width/2, height/2);
+  //list[2] = new PVector(width, 0);
   
-  plotter.drawLines(list);
+  //plotter.drawLines(list);
   plotter.selectPen(0); //put the pen back
    
   println(plotter.convertY(height/2));
