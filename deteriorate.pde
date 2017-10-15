@@ -2,6 +2,7 @@ import processing.serial.*; //import the serial class library
 
 Serial myPort;    // Create object from Serial class
 Plotter plotter;  // Create a plotter object
+ 
 int val;          // Data received from the serial port, needed?
 
 //Enable plotting? //toggle for debug
@@ -11,11 +12,12 @@ String label = "TEST"; //Label, not using right now
 
 
 int xMin, yMin, xMax, yMax; //Plotter dimensions, set in "printer units"
+// these values are assigned in the with the setPaper function
 
 // the line segments
 int numSegments = 10;
 float margin, segmentLength;
-PVector[] vertices = new PVector[numSegments];
+PVector[] vertices = new PVector[numSegments]; //arraylist of vertices for the segments
 
 //the repeat
 int repeat, offset, count;
@@ -28,8 +30,8 @@ void settings() {
   println("print dimensions", xMin, yMin, xMax, yMax); //
 
   // Calculate the screen dimension
-  int screenWidth = (xMax - xMin)/20;
-  int screenHeight = (yMax - yMin)/20;
+  int screenWidth = (xMax - xMin)/10;
+  int screenHeight = (yMax - yMin)/10;
 
   //set the canvas size depending on the paper size that will be used...
   size(screenWidth, screenHeight);
@@ -92,15 +94,15 @@ void draw() {
   //if count is less then repeat
   if (count < repeat) {
     //draw the lines
-    //update the lines
-    //update the count
     drawLines(); //for screen preview
-
     if(PLOTTING_ENABLED) plotter.drawLines(vertices); //for plotting
 
-    updateVertices(1);
+    //update the lines, the vert will increase or decrease by the value
+    //updateVertices(1);
+    updateVertices(count/15); //the jumpsize is 1/15 of the count, so more drastic towards end
     //println(count, repeat);
 
+    //update the count
     count++;
   } else {
     //else, printing is over
@@ -113,9 +115,7 @@ void draw() {
     //exit(); //exit the program automatically
   }
 
-  if(PLOTTING_ENABLED){
-    delay(1000);
-  }
+  if(PLOTTING_ENABLED) delay(1000); //this is for memory control on the printer
 }
 
 // set the global paper size
@@ -177,7 +177,7 @@ void updateVertices(float jump) {
       // generate a random number between 0 and 10
       int randNum = floor(random(1)*11);
 
-      // if greate than threshold, add to the y value
+      // if greater than threshold, add to the y value
       // raise the threshold by 1
       //if less than threshold, sub from the value by jump move down,
       // lower theshold by -1
