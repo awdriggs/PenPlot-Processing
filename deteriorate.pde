@@ -99,7 +99,7 @@ void draw() {
 
     //update the lines, the vert will increase or decrease by the value
     //updateVertices(1);
-    updateVertices(count/15); //the jumpsize is 1/15 of the count, so more drastic towards end
+    updateVertices(count/10); //the jumpsize is 1/15 of the count, so more drastic towards end
     //println(count, repeat);
 
     //update the count
@@ -146,6 +146,7 @@ void setPaper(String size) {
 }
 
 void updateVertices(float jump) {
+  if(jump < 1) jump = 1; 
   //Outer Probability
   println("repeat", repeat, "count", count);
 
@@ -160,8 +161,8 @@ void updateVertices(float jump) {
   //loop through the vertices array
   //the x value of each will either increase, decrease, or stagnate depending on a random behavior
   for (int i = 0; i < vertices.length; i++) {
-
-    vertices[i].x += offset; //first, update by an offset so the lines fill the page
+    //reset 
+    vertices[i].x = offset*count + offset/2; // this will reset the x
 
     //Event #1
     float random1 = random(repeat);
