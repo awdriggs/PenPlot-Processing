@@ -85,7 +85,7 @@ class Plotter {
     //add the closing semi-colon
     statement += ";"; //closing command
     
-    println(statement);
+    //println(statement); //for debug
     
     //send the statement to the plotter
     write(statement);
