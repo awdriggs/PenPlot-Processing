@@ -67,12 +67,14 @@ void draw(){
   //test it! draws a li
   
   plotter.selectPen(1); //pick a pen
+  plotter.write("PU410,596;PD410,4196,410,7796;");
+
   //line(0, height/2, width, height/2);
   //plotter.drawLine(0, height/2, width, height/2);
   //plotter.drawLine(0, 0, width, 0);
   //plotter.drawLine(0, height, width, height);
   //line(width/2, 0, width/2, height);
-  plotter.drawLine(width/2, 0, width/2, height);
+  //plotter.drawLine(width/2, 0, width/2, height);
   
   //PVector[] list = new PVector[3];
   //list[0] = new PVector(0, 0);
