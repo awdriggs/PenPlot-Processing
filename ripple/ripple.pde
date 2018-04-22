@@ -5,7 +5,7 @@ Plotter plotter;  // Create a plotter object
 int val;          // Data received from the serial port, needed?
 
 //Enable plotting? //toggle for debug
-final boolean PLOTTING_ENABLED = false;
+final boolean PLOTTING_ENABLED = true;
 
 String label = "TEST"; //Label, not using right now
 
@@ -31,28 +31,28 @@ void settings() {
   int screenWidth = (xMax - xMin)/20;
   int screenHeight = (yMax - yMin)/20;
 
-  //set the canvas size depending on the paper size that will be used...
+  //set the canvas size depending on the paper size that will be used... 
   size(screenWidth, screenHeight);
   println("screen dimensions", width, height);
 }
 
 //Let's set this up
 void setup() {
-  if(PLOTTING_ENABLED){
 
-    //select a serial port
-    println(Serial.list()); //Print all serial ports to the console
+  //select a serial port
+  println(Serial.list()); //Print all serial ports to the console
 
-    String portName = Serial.list()[3]; //make sure you pick the right one
-    println("Plotting to port: " + portName);
+  String portName = Serial.list()[3]; //make sure you pick the right one
+  println("Plotting to port: " + portName);
 
-    //open the port
-    myPort = new Serial(this, portName, 9600);
+  //open the port
+  myPort = new Serial(this, portName, 9600);
 
-    //create a plotter object, let the printer know the papersize
-    plotter = new Plotter(myPort, xMin, yMin, xMax, yMax);
-  }
-   
+  //create a plotter object, let the printer know the papersize
+  plotter = new Plotter(myPort, xMin, yMin, xMax, yMax);
+
+  
+
   //setup everything for drawing!
   //initialize the repeat
   repeat = 100; //draw this many lines
@@ -71,21 +71,17 @@ void setup() {
   //the y is set to distribute the vertices equal in the available space
   //the z index is being used as a threshold for the random change, 5 is neutral
   for (int i = 0; i < vertices.length; i++) {
-    vertices[i] = new PVector(offset/2, segmentLength * i + margin, 5);
+    vertices[i] = new PVector(offset/2, segmentLength * i + margin, 5); 
     //println(i, vertices[i]);
   }
 
   //some standard processing stuff
-  background(255);
+  background(255); 
+  frameRate(0.5); //using this to slow down the commands to the printer
   smooth();
+  plotter.selectPen(1); //pick a pen
+  delay(5000); //give the printer a chance to warm up
   //noLoop(); //kill the loop, otherwise your print will never end, but maybe that's what you want ;)
-
-  if(PLOTTING_ENABLED){
-    frameRate(0.5); //using this to slow down the commands to the printer
-    plotter.selectPen(1); //pick a pen
-    delay(5000); //give the printer a chance to warm up
-  }
-
 }
 
 void draw() {
@@ -95,27 +91,27 @@ void draw() {
     //update the lines
     //update the count
     drawLines(); //for screen preview
-
-    if(PLOTTING_ENABLED) plotter.drawLines(vertices); //for plotting
-
-    updateVertices(1);
-    //println(count, repeat);
-
+    plotter.drawLines(vertices); //for plotting
+    
+    updateVertices(10);
+    println(count, repeat);
+    
     count++;
+    
+    
   } else {
     //else, printing is over
     //println("done priting");
-    //put the pen back
-    if(PLOTTING_ENABLED) plotter.selectPen(0); //put the pen back
-
+    //put the pen back  
+    plotter.selectPen(0); //put the pen back
+    
     //stop the serial port for clean exit
     //myPort.stop();
     //exit(); //exit the program automatically
   }
-
-  if(PLOTTING_ENABLED){
-    delay(1000);
-  }
+  
+  delay(1000);
+  //delay(1000); //
 }
 
 // set the global paper size
@@ -145,50 +141,31 @@ void setPaper(String size) {
   }
 }
 
-void updateVertices(float jump) {
-  //Outer Probability
-  println("repeat", repeat, "count", count);
-
-  float difference = repeat - count; //so since repeat and count are ints, they need to be typecast to floats to work
-  float probability1 = (difference/repeat)*100;
-
-  //println("difference", repeat - count);
-  //println(float(repeat - count)/repeat);
-
-  //println("percentage", probability1);
-
+void updateVertices(int jump) {
   //loop through the vertices array
-  //the x value of each will either increase, decrease, or stagnate depending on a random behavior
+  //the x value of each will either increase, decrease, or stagnate depending on a random behavior 
   for (int i = 0; i < vertices.length; i++) {
 
     vertices[i].x += offset; //first, update by an offset so the lines fill the page
 
-    //Event #1
-    float random1 = random(repeat);
-    //println("random1", random1);
+    // variable probability, use the pvector z component as a threshold
+    //create a 'tendency' towards straightness
+    // all z's are 5 to start
 
-    if (random1 > probability1) {
-      //Event #2
-      println("changing");
-      // variable probability, use the pvector z component as a threshold
-      //create a 'tendency' towards straightness
-      // all z's are 5 to start
+    // generate a random number between 0 and 10
+    int randNum = floor(random(1)*11);
 
-      // generate a random number between 0 and 10
-      int randNum = floor(random(1)*11);
-
-      // if greate than threshold, add to the y value
-      // raise the threshold by 1
-      //if less than threshold, sub from the value by jump move down,
-      // lower theshold by -1
-      //if at threshold stay
-      if (randNum > vertices[i].z) {
-        vertices[i].x += jump;
-        vertices[i].z += 1; //increase the threshold
-      } else if (randNum < vertices[i].z) {
-        vertices[i].x -= jump;
-        vertices[i].z -= 1; //decrease the threshold
-      }
+    // if greate than threshold, add to the y value 
+    // raise the threshold by 1
+    //if less than threshold, sub from the value by jump move down, 
+    // lower theshold by -1
+    //if at threshold stay
+    if (randNum > vertices[i].z) {
+      vertices[i].x += jump;
+      vertices[i].z += 1; //increase the threshold
+    } else if (randNum < vertices[i].z) {
+      vertices[i].x -= jump;
+      vertices[i].z -= 1; //decrease the threshold
     }
   }
 }
