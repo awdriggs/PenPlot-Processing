@@ -6,7 +6,7 @@ Plotter plotter;  // Create a plotter object
 int val;          // Data received from the serial port, needed?
 
 //Enable plotting? //toggle for debug
-final boolean PLOTTING_ENABLED = false;
+final boolean PLOTTING_ENABLED = true;
 
 String label = "TEST"; //Label, not using right now
 
@@ -58,7 +58,7 @@ void setup() {
    
   //setup everything for drawing!
   //initialize the repeat
-  repeat = 100; //draw this many lines
+  repeat = 200; //draw this many lines
   offset = width/repeat; //calculate how far to move across the page with each path.
   count = 0;
 
@@ -85,7 +85,8 @@ void setup() {
 
   if(PLOTTING_ENABLED){
     frameRate(0.5); //using this to slow down the commands to the printer
-    plotter.selectPen(1); //pick a pen
+    //pen is so fucked!!!!
+    /* plotter.selectPen(1); //pick a pen */
     delay(5000); //give the printer a chance to warm up
   }
 

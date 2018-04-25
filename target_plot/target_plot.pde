@@ -2,16 +2,29 @@ import processing.serial.*; //import the serial class library
 
 Serial myPort;    // Create object from Serial class
 Plotter plotter;  // Create a plotter object
- 
+
 int val;          // Data received from the serial port, needed?
 
 //Enable plotting? //toggle for debug
-final boolean PLOTTING_ENABLED = false;
+final boolean PLOTTING_ENABLED = true;
 
 String label = "TEST"; //Label, not using right now
 
 int xMin, yMin, xMax, yMax; //Plotter dimensions, set in "printer units"
 // these values are assigned in the with the setPaper function
+
+int count = 0; //count the number of rounds that it takes
+
+//setup for points
+// init goal
+// init points array
+// init mutation rate
+// init size of point
+PVector goal;
+Point[] population = new Point[25];
+float mutationRate = 0.1;
+int pointSize = 10;
+int threshold = 5; //used to know when to stop the program
 
 void settings() {
   // Set the paper size first, this allows the preview window to be in proportion
@@ -32,7 +45,6 @@ void settings() {
 //Let's set this up
 void setup() {
   if(PLOTTING_ENABLED){
-
     //select a serial port
     println(Serial.list()); //Print all serial ports to the console
 
@@ -41,73 +53,110 @@ void setup() {
 
     //open the port
     myPort = new Serial(this, portName, 9600);
-     
 
     //create a plotter object, let the printer know the papersize
     plotter = new Plotter(myPort, xMin, yMin, xMax, yMax);
   }
-   
-  //setup everything for drawing!
-  //initialize the repeat
-  repeat = 100; //draw this many lines
-  offset = width/repeat; //calculate how far to move across the page with each path.
-  count = 0;
-
-  margin = 0; //for giving some space on the top on bottom of the line segments
-
-  //calculate the length of the segment
-  //leave some margin on either side, divide into segments
-  //since the first and last segments are 'anchors', use one less than the number of segments
-  segmentLength = (height - 2 * margin) / (numSegments-1);
-
-  //initialize the vertices that will make the line
-  //the x the offset to start
-  //the y is set to distribute the vertices equal in the available space
-  //the z index is being used as a threshold for the random change, 5 is neutral
-  for (int i = 0; i < vertices.length; i++) {
-    vertices[i] = new PVector(offset/2, segmentLength * i + margin, 5);
-    //println(i, vertices[i]);
-  }
 
   //some standard processing stuff
   background(255);
+  stroke(0);
   smooth();
   //noLoop(); //kill the loop, otherwise your print will never end, but maybe that's what you want ;)
 
   if(PLOTTING_ENABLED){
     frameRate(0.5); //using this to slow down the commands to the printer
-    plotter.selectPen(1); //pick a pen
+    //pen carousel is fucked!!!
+    /* plotter.selectPen(1); //pick a pen */
     delay(5000); //give the printer a chance to warm up
   }
 
+  //init the goal to a random number within the drawing window
+  goal = new PVector(random(width), random(height));
+  //init the population, loop and create new points
+  for(int i = 0; i < population.length; i++){
+    population[i] = new Point();
+  }
+
+  //speed control?
 }
 
 void draw() {
-  //if count is less then repeat
-  if (count < repeat) {
-    //draw the lines
-    drawLines(); //for screen preview
-    if(PLOTTING_ENABLED) plotter.drawLines(vertices); //for plotting
+  //draw a cross at the target
+  if(count == 0){
+    line(goal.x-10, goal.y, goal.x+10, goal.y);
+    line(goal.x, goal.y-10, goal.x, goal.y+10);
 
-    //update the lines, the vert will increase or decrease by the value
-    //updateVertices(1);
-    updateVertices(count/15); //the jumpsize is 1/15 of the count, so more drastic towards end
-    //println(count, repeat);
-
-    //update the count
-    count++;
-  } else {
-    //else, printing is over
-    //println("done priting");
-    //put the pen back
-    if(PLOTTING_ENABLED) plotter.selectPen(0); //put the pen back
-
-    //stop the serial port for clean exit
-    //myPort.stop();
-    //exit(); //exit the program automatically
+    if(PLOTTING_ENABLED){
+      plotter.drawLine(goal.x-10, goal.y, goal.x+10, goal.y);
+      plotter.drawLine(goal.x, goal.y-10, goal.x, goal.y+10);
+      delay(100);
+    }
   }
 
-  if(PLOTTING_ENABLED) delay(1000); //this is for memory control on the printer
+
+  //do some calc to see if should continue, like avg distance or something
+  float distanceSum = 0;
+  for(int i = 0; i < population.length; i++){
+    distanceSum += PVector.dist(population[i].location, goal);
+  }
+
+  float distanceAvg = distanceSum / population.length;
+  println(distanceAvg);
+
+
+  //if continue
+  if(distanceAvg > threshold){
+    //draw points, delay if printing
+    //caclulate fitness
+    for(int i = 0; i < population.length; i++){
+      population[i].display(pointSize);
+      population[i].calculateFitness(); //fitness score needed for selection
+
+      if(PLOTTING_ENABLED){
+        plotter.drawCircle(population[i].location.x, population[i].location.y, pointSize, 10); 
+      }
+    }
+
+    //select mating pool
+    // create the mating pool
+    ArrayList<Point> matingPool = new ArrayList<Point>();
+
+    for(int i = 0; i < population.length; i++){
+      for(int j = 0; j < population[i].fitness * 100; j++){
+        //add to the mating pool
+        matingPool.add(population[i]);
+      }
+    }
+
+    //REPRODUCE
+    for(int i = 0; i < population.length; i++){
+      if(population[i].distance > 5){
+        int a = int(random(matingPool.size()));
+        int b = int(random(matingPool.size()));
+
+        Point parentA = matingPool.get(a);
+        Point parentB = matingPool.get(b);
+
+        Point child = parentA.crossover(parentB);
+
+        //mutate
+        child.mutate(mutationRate);
+        population[i] = child;
+      }
+    }
+
+    //delay if printing
+    //loop
+
+  } else {
+    if(PLOTTING_ENABLED){
+      plotter.endPrint();
+      myPort.stop();
+    }
+    println("close enough!");
+    exit();
+  }
 }
 
 // set the global paper size
@@ -137,59 +186,3 @@ void setPaper(String size) {
   }
 }
 
-void updateVertices(float jump) {
-  //Outer Probability
-  println("repeat", repeat, "count", count);
-
-  float difference = repeat - count; //so since repeat and count are ints, they need to be typecast to floats to work
-  float probability1 = (difference/repeat)*100;
-
-  //println("difference", repeat - count);
-  //println(float(repeat - count)/repeat);
-
-  //println("percentage", probability1);
-
-  //loop through the vertices array
-  //the x value of each will either increase, decrease, or stagnate depending on a random behavior
-  for (int i = 0; i < vertices.length; i++) {
-
-    vertices[i].x += offset; //first, update by an offset so the lines fill the page
-
-    //Event #1
-    float random1 = random(repeat);
-    //println("random1", random1);
-
-    if (random1 > probability1) {
-      //Event #2
-      println("changing");
-      // variable probability, use the pvector z component as a threshold
-      //create a 'tendency' towards straightness
-      // all z's are 5 to start
-
-      // generate a random number between 0 and 10
-      int randNum = floor(random(1)*11);
-
-      // if greater than threshold, add to the y value
-      // raise the threshold by 1
-      //if less than threshold, sub from the value by jump move down,
-      // lower theshold by -1
-      //if at threshold stay
-      if (randNum > vertices[i].z) {
-        vertices[i].x += jump;
-        vertices[i].z += 1; //increase the threshold
-      } else if (randNum < vertices[i].z) {
-        vertices[i].x -= jump;
-        vertices[i].z -= 1; //decrease the threshold
-      }
-    }
-  }
-}
-
-//for screen preview
-void drawLines() {
-  //loop through the vertices, don't run on the last vertex
-  //draw a line from current point to next point
-  for (int i = 0; i < vertices.length - 1; i++) {
-    line(vertices[i].x, vertices[i].y, vertices[i+1].x, vertices[i+1].y);
-  }
-}

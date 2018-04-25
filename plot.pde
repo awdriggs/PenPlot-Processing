@@ -40,6 +40,7 @@ void setup(){
   
   //open the port
   myPort = new Serial(this, portName, 9600);
+   
 
   //create a plotter object, let the printer know the papersize
   plotter = new Plotter(myPort, xMin, yMin, xMax, yMax);
@@ -48,7 +49,7 @@ void setup(){
 }
 
 void draw(){
-  plotter.write("PU100,100;");
+  //plotter.write("PU100,100;");
   //plotter.write("PD500,0,500,500,0,500,0,0;");
   
   /*
@@ -67,7 +68,7 @@ void draw(){
   //test it! draws a li
   
   plotter.selectPen(1); //pick a pen
-  plotter.write("PU410,596;PD410,4196,410,7796;");
+  /* plotter.write("PU410,596;PD410,4196,410,7796;"); */
 
   //line(0, height/2, width, height/2);
   //plotter.drawLine(0, height/2, width, height/2);
@@ -82,12 +83,12 @@ void draw(){
   //list[2] = new PVector(width, 0);
   
   //plotter.drawLines(list);
-  plotter.selectPen(0); //put the pen back
-   
-  println(plotter.convertY(height/2));
-  //end the printing
+  
+  //testing a circle
+ plotter.drawCircle(width/2, height/2, 5, 10);
+ //end the printing
   myPort.stop();
-  //exit();
+  exit();
 }
 
 // set the global paper size
