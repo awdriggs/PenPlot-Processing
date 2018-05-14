@@ -78,10 +78,12 @@ void setup() {
     population[i] = new Point();
   }
 
+  noLoop(); //use space to advance and call draw, stop the buffer overflow
   //speed control?
 }
 
 void draw() {
+   
   //draw a cross at the target
   if(count == 0){
     line(goal.x-10, goal.y, goal.x+10, goal.y);
@@ -93,7 +95,17 @@ void draw() {
       delay(100);
     }
   }
+  
+  println("drawing points");
+  //draw points, delay if printing
+  for(int i = 0; i < population.length; i++){
+    population[i].display(pointSize);
+    population[i].calculateFitness(); //fitness score needed for selection
 
+    if(PLOTTING_ENABLED){
+      plotter.drawCircle(population[i].location.x, population[i].location.y, pointSize, 10);
+    }
+  }
 
   //do some calc to see if should continue, like avg distance or something
   float distanceSum = 0;
@@ -107,17 +119,6 @@ void draw() {
 
   //if continue
   if(distanceAvg > threshold){
-    //draw points, delay if printing
-    //caclulate fitness
-    for(int i = 0; i < population.length; i++){
-      population[i].display(pointSize);
-      population[i].calculateFitness(); //fitness score needed for selection
-
-      if(PLOTTING_ENABLED){
-        plotter.drawCircle(population[i].location.x, population[i].location.y, pointSize, 10); 
-      }
-    }
-
     //select mating pool
     // create the mating pool
     ArrayList<Point> matingPool = new ArrayList<Point>();
@@ -146,8 +147,10 @@ void draw() {
       }
     }
 
-    //delay if printing
+    //delay if printing?
     //loop
+    println(count);
+    count++;
 
   } else {
     if(PLOTTING_ENABLED){
@@ -157,6 +160,12 @@ void draw() {
     println("close enough!");
     exit();
   }
+}
+
+void mousePressed() {
+
+  println("move forward");
+  redraw();
 }
 
 // set the global paper size

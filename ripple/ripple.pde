@@ -79,7 +79,7 @@ void setup() {
   background(255); 
   frameRate(0.5); //using this to slow down the commands to the printer
   smooth();
-  plotter.selectPen(1); //pick a pen
+  /* plotter.selectPen(1); //pick a pen */
   delay(5000); //give the printer a chance to warm up
   //noLoop(); //kill the loop, otherwise your print will never end, but maybe that's what you want ;)
 }
@@ -93,7 +93,7 @@ void draw() {
     drawLines(); //for screen preview
     plotter.drawLines(vertices); //for plotting
     
-    updateVertices(10);
+    updateVertices(2);
     println(count, repeat);
     
     count++;
@@ -103,11 +103,11 @@ void draw() {
     //else, printing is over
     //println("done priting");
     //put the pen back  
-    plotter.selectPen(0); //put the pen back
+    /* plotter.selectPen(0); //put the pen back */
     
     //stop the serial port for clean exit
-    //myPort.stop();
-    //exit(); //exit the program automatically
+    myPort.stop();
+    exit(); //exit the program automatically
   }
   
   delay(1000);

@@ -6,10 +6,9 @@ Plotter plotter;  // Create a plotter object
 int val;          // Data received from the serial port, needed?
 
 //Enable plotting? //toggle for debug
-final boolean PLOTTING_ENABLED = true;
+final boolean PLOTTING_ENABLED = false;
 
 String label = "TEST"; //Label, not using right now
-
 
 int xMin, yMin, xMax, yMax; //Plotter dimensions, set in "printer units"
 // these values are assigned in the with the setPaper function
@@ -58,7 +57,7 @@ void setup() {
    
   //setup everything for drawing!
   //initialize the repeat
-  repeat = 200; //draw this many lines
+  repeat = 100; //draw this many lines
   offset = width/repeat; //calculate how far to move across the page with each path.
   count = 0;
 
@@ -113,8 +112,8 @@ void draw() {
     if(PLOTTING_ENABLED) plotter.selectPen(0); //put the pen back
 
     //stop the serial port for clean exit
-    //myPort.stop();
-    //exit(); //exit the program automatically
+    if(PLOTTING_ENABLED) myPort.stop();
+    exit(); //exit the program automatically
   }
 
   if(PLOTTING_ENABLED) delay(1000); //this is for memory control on the printer
@@ -173,7 +172,7 @@ void updateVertices(float jump) {
       //Event #2
       println("changing");
       // variable probability, use the pvector z component as a threshold
-      //create a 'tendency' towards straightness
+      // create a 'tendency' towards straightness
       // all z's are 5 to start
 
       // generate a random number between 0 and 10
