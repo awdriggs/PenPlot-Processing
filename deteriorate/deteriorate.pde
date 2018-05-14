@@ -2,7 +2,7 @@ import processing.serial.*; //import the serial class library
 
 Serial myPort;    // Create object from Serial class
 Plotter plotter;  // Create a plotter object
- 
+
 int val;          // Data received from the serial port, needed?
 
 //Enable plotting? //toggle for debug
@@ -49,12 +49,12 @@ void setup() {
 
     //open the port
     myPort = new Serial(this, portName, 9600);
-     
+
 
     //create a plotter object, let the printer know the papersize
     plotter = new Plotter(myPort, xMin, yMin, xMax, yMax);
   }
-   
+
   //setup everything for drawing!
   //initialize the repeat
   repeat = 100; //draw this many lines
@@ -94,12 +94,26 @@ void setup() {
 void draw() {
   //if count is less then repeat
   if (count < repeat) {
-    //draw the lines
-    drawLines(); //for screen preview
-    if(PLOTTING_ENABLED) plotter.drawLines(vertices); //for plotting
 
+    boolean noLimit = true;
+
+    //loop through the vertices of the line
+    //if any of the verts are greater than the max x, set limit to true
+    for(int i = 0; i < vertices.length; i++){
+      println(vertices[i]);
+      if(vertices[i].x >= width){
+        println(vertices[i].x);
+        noLimit = false;
+        println("too big");
+      }
+    }
+    //if limit is true don't draw
+    if(noLimit){
+      //draw the lines
+      drawLines(); //for screen preview
+      if(PLOTTING_ENABLED) plotter.drawLines(vertices); //for plotting
+    }
     //update the lines, the vert will increase or decrease by the value
-    //updateVertices(1);
     updateVertices(count/15); //the jumpsize is 1/15 of the count, so more drastic towards end
     //println(count, repeat);
 
