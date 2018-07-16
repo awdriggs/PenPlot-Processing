@@ -48,6 +48,17 @@ class Plotter {
   float convertY(float value) {
     return map(value, 0, height, yMin, yMax);
   }
+  
+  //send the pen to a location, engage true will put pen down 
+  void sendTo(float x, float y, boolean engage){
+    String statement = "PU" + convertX(x) + "," + convertY(y) + ";";
+
+    if(engage){
+      statement += "PD;";
+    }
+
+    write(statement);
+  }
 
   //draw a line
   void drawLine(float xStart, float yStart, float xEnd, float yEnd) {
@@ -59,6 +70,13 @@ class Plotter {
     statement += "PD" + convertX(xEnd) + "," + convertY(yEnd) + ";PU;";
     
     //send the statement to the plotter
+    write(statement);
+  }
+  
+  void drawTo(float x, float y){
+    //problem here???????
+    String statement = convertX(x) + "," + convertY(y) + ";";
+  
     write(statement);
   }
 
