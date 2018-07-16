@@ -83,7 +83,7 @@ class Plotter {
     }
     
     //add the closing semi-colon
-    statement += ";"; //closing command
+    statement += ";PU;"; //closing command
    
     //println(statement); //for debug
     

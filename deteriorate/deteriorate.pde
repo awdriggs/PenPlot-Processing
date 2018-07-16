@@ -6,7 +6,7 @@ Plotter plotter;  // Create a plotter object
 int val;          // Data received from the serial port, needed?
 
 //Enable plotting? //toggle for debug
-final boolean PLOTTING_ENABLED = false;
+final boolean PLOTTING_ENABLED = true;
 
 String label = "TEST"; //Label, not using right now
 
@@ -105,6 +105,7 @@ void draw() {
         println(vertices[i].x);
         noLimit = false;
         println("too big");
+        break;
       }
     }
     //if limit is true don't draw
