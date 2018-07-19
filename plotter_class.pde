@@ -19,16 +19,16 @@ class Plotter {
 
   //methods
   void write(String hpgl) {
+    if (PLOTTING_ENABLED) {
       port.write(hpgl);
+    }
   }
 
   void write(String hpgl, int del) {
+    if (PLOTTING_ENABLED) {
       port.write(hpgl);
       delay(del);
-  }
-
-  void endPrint() {
-    write("PA0,0;SP0;");
+    }
   }
 
   //select a pen
@@ -36,8 +36,8 @@ class Plotter {
     if (slot >= 0 && slot <= 6 ) {
       write("SP" + slot + ";");
     } else {
-      println("Your pen selection of " +
-          slot + " isn't a valid pen slot. Using default pen instead.");
+      println("Your pen selection of " + 
+        slot + " isn't a valid pen slot. Using default pen instead.");
     }
   }
 
@@ -48,59 +48,67 @@ class Plotter {
   float convertY(float value) {
     return map(value, 0, height, yMin, yMax);
   }
+  
+  //send the pen to a location, engage true will put pen down 
+  void sendTo(float x, float y, boolean engage){
+    println("sendto called", x, y);
+    String statement = "PU" + convertX(x) + "," + convertY(y) + ";";
+
+    if(engage){
+      statement += "PD;";
+    }
+
+    write(statement);
+  }
 
   //draw a line
   void drawLine(float xStart, float yStart, float xEnd, float yEnd) {
     //build a statement string so that only one write needs to be made to the plotter
     //start the command, pen up, move to start location
     String statement = "PU" + convertX(xStart) + "," + convertY(yStart) + ";";
-
+    
     //pen down, move to end location, put pen up
     statement += "PD" + convertX(xEnd) + "," + convertY(yEnd) + ";PU;";
-
+    
     //send the statement to the plotter
+    write(statement);
+  }
+  
+  void drawTo(float x, float y){
+    println("drawTo", x, y);
+    //problem here???????
+    String statement = "PA" + convertX(x) + "," + convertY(y) + ";";
+    println(statement); 
     write(statement);
   }
 
   //draw a series of connected lines
   void drawLines(PVector[] vertices) {
     //build a statement string so that only one write needs to be made to the plotter
-
+    
     //start thes statment, pen up and move to first location, pen down, ready for next location
     String statement = "PU"+ convertX(vertices[0].x) + "," + convertY(vertices[0].y) + ";PD";
-
+    
     //loop through the rest of the locations, add the x and y coordinate for each to the statement
     for (int i = 1; i < vertices.length; i++) {
       float x = convertX(vertices[i].x);
       float y = convertY(vertices[i].y);
-
+      
       statement += (x + "," + y);
-
+      
       //if we aren't at the end, add a comma to add the next location
       if(i != vertices.length -1){
-        statement += ","; //
+       statement += ","; //
       }
     }
-
+    
     //add the closing semi-colon
-    statement += ";"; //closing command
-
+    statement += ";PU;"; //closing command
+   
     //println(statement); //for debug
-
+    
     //send the statement to the plotter
     write(statement);
-  }
-
-  //draw an cirlce 
-  //draw a circle at x, y with input resolution
-  void drawCircle(float x, float y, float diam, float res) {
-
-    //convert the given pixel dimension to the printer dimensions
-    float radius = map(diam/2, 0, width, 0, xMax-xMin);
-
-    println(radius);
-    //PAx,y; CIradius,res; //move to x, y and draw a circle
-    write("PA" + convertX(x) + "," + convertY(y) + ";" + "CI" + radius + "," + res + ";");
   }
 
   //label
