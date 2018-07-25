@@ -10,7 +10,7 @@ import processing.serial.*; //import the serial class library
 Serial myPort;    // Create object from Serial class
 Plotter plotter;  // Create a plotter object
 
-final boolean PLOTTING_ENABLED = true;
+final boolean PLOTTING_ENABLED = false;
 
 int xMin, yMin, xMax, yMax; //Plotter dimensions, set in "printer units"
 // these values are assigned in the with the setPaper function
@@ -87,7 +87,7 @@ void draw(){
 //header line contians the size of a 2d array
 //the remaining lines give the 2d coords, followed by x y data pair
 void parse(){
-  BufferedReader reader = createReader("points.txt");
+  BufferedReader reader = createReader("5.txt");
   String line = null;
 
   try {
