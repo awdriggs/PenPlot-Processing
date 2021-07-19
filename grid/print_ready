@@ -1,3 +1,4 @@
+/*
 //sketch vairables
 PVector grid[][];
 int numCols;
@@ -10,7 +11,7 @@ import processing.serial.*; //import the serial class library
 Serial myPort;    // Create object from Serial class
 Plotter plotter;  // Create a plotter object
 
-final boolean PLOTTING_ENABLED = true;
+final boolean PLOTTING_ENABLED = false
 
 int xMin, yMin, xMax, yMax; //Plotter dimensions, set in "printer units"
 // these values are assigned in the with the setPaper function
@@ -30,8 +31,8 @@ void settings() {
   println("screen dimensions", width, height);
 
   //hMargin = width/2 - 125;
-  hMargin = 0; 
-  vMargin = 0; 
+  hMargin = 0;
+  vMargin = 0;
   //vMargin = height/2 - 250;
 }
 
@@ -48,7 +49,7 @@ void setup(){
 
     //open the port
     myPort = new Serial(this, portName, 9600);
-     
+
 
     //create a plotter object, let the printer know the papersize
     plotter = new Plotter(myPort, xMin, yMin, xMax, yMax);
@@ -57,77 +58,36 @@ void setup(){
 
 void draw(){
   preview();
-  //loop through grid, draw the rows, then draw the cols
-  println("cols", numCols, "rows", numRows);
-   
-  if(PLOTTING_ENABLED){
-    plotter.sendTo(grid[0][0].x, grid[0][0].y, false);
-    //draw a line connecting the points in each col
-    for(int i = 0; i < numCols; i++){
-      //draw lines between each point in the pvector
-      plotter.drawLines(grid[i]);
-      delay(3000);
-    }
-    plotter.sendTo(grid[0][0].x, grid[0][0].y, false);
-    delay(5000);
-    //draw a line connecting the points in each row
-    for(int j = 0; j < numRows; j++){
-      PVector column[] = new PVector[numCols];
 
-      for(int i = 0; i < numCols; i++){
-        column[i] = grid[i][j] ;
-      }
-      println(column.length);
-      println(column);
-      plotter.drawLines(column);
-      delay(5000);
-    }
+  if(PLOTTING_ENABLED){
+    /* plotter.sendTo(grid[0][0].x, grid[0][0].y, false); */
+    /* //draw a line connecting the points in each col */
+    /* for(int i = 0; i < numCols; i++){ */
+    /*   //draw lines between each point in the pvector */
+    /*   plotter.drawLines(grid[i]); */
+    /*   delay(3000); */
+    /* } */
+    /* plotter.sendTo(grid[0][0].x, grid[0][0].y, false); */
+    /* delay(5000); */
+    /* //draw a line connecting the points in each row */
+    /* for(int j = 0; j < numRows; j++){ */
+    /*   PVector column[] = new PVector[numCols]; */
+
+    /*   for(int i = 0; i < numCols; i++){ */
+    /*     column[i] = grid[i][j] ; */
+    /*   } */
+    /*   println(column.length); */
+    /*   println(column); */
+    /*   plotter.drawLines(column); */
+    /*   delay(5000); */
+    /* } */ 
   } //end of plotting enabled
 }
 
-//read in a text file
-//header line contians the size of a 2d array
-//the remaining lines give the 2d coords, followed by x y data pair
-void parse(){
-  BufferedReader reader = createReader("5.txt");
-  String line = null;
-
-  try {
-    //read first line
-    String size[] = split(reader.readLine(), ",");
-
-    //init grid with the sizes, needs to be cast to an int
-    numCols = int(size[0]);
-    numRows = int(size[1]);
-
-    grid = new PVector[numCols][numRows];
-
-    //loop through the rest of the file
-    while ((line = reader.readLine()) != null) {
-      String[] parts = split(line, ",");
-      //at the given index, write the location of this point
-      grid[int(parts[0])][int(parts[1])] = new PVector(float(parts[2])+hMargin, float(parts[3])+vMargin);
-    }
-    reader.close();
-  } catch (IOException e) {
-    e.printStackTrace();
-  }
-}
+/*
 
 void preview(){
 
-  for(int i = 0; i < numCols; i++){
-    //for screen drawing
-    for(int j = 0; j < numRows - 1; j++){
-      line(grid[i][j].x, grid[i][j].y, grid[i][j+1].x, grid[i][j+1].y);
-    }
-  }
-  //draw a line connecting the points in each row
-  for(int i = 0; i < numCols - 1; i++){
-    for(int j = 0; j < numRows; j++){
-      line(grid[i][j].x, grid[i][j].y, grid[i+1][j].x, grid[i+1][j].y);
-    }
-  }
 }
 
 // set the global paper size
@@ -156,4 +116,4 @@ void setPaper(String size) {
     println("A valid paper size wasn't given to your Plotter object.");
   }
 }
-
+/*
