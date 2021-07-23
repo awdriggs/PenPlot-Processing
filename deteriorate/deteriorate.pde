@@ -6,7 +6,7 @@ Plotter plotter;  // Create a plotter object
 int val;          // Data received from the serial port, needed?
 
 //Enable plotting? //toggle for debug
-final boolean PLOTTING_ENABLED = true;
+final boolean PLOTTING_ENABLED = false;
 
 String label = "TEST"; //Label, not using right now
 

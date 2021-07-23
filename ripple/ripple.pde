@@ -5,7 +5,7 @@ Plotter plotter;  // Create a plotter object
 int val;          // Data received from the serial port, needed?
 
 //Enable plotting? //toggle for debug
-final boolean PLOTTING_ENABLED = true;
+final boolean PLOTTING_ENABLED = false;
 
 String label = "TEST"; //Label, not using right now
 
@@ -106,7 +106,7 @@ void draw() {
     /* plotter.selectPen(0); //put the pen back */
     
     //stop the serial port for clean exit
-    myPort.stop();
+    myPort.stop()
     exit(); //exit the program automatically
   }
   
