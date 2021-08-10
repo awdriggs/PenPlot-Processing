@@ -39,6 +39,7 @@ void setup(){ //Let's set up ports and plotter
     println(Serial.list()); //Print all serial ports to the console
 
     String portName = Serial.list()[5]; //make sure you pick the right one
+    /* String portName = Serial.list()[3]; //make sure you pick the right one */
     println("Plotting to port: " + portName);
 
     myPort = new Serial(this, portName, 9600); //opens the port
@@ -53,7 +54,7 @@ void draw(){
   println("drawing");
   //plotter.write("PU100,100;");
   //plotter.write("PD500,0,500,500,0,500,0,0;");
-  println("50 px test..." + plotter.convertX(50));
+  /* println("50 px test..." + plotter.convertX(50)); */
   /*
      plotter.write("CT0;PA0,0;CI5;");
      plotter.write("CT0;PA100,0;CI5;");
@@ -69,7 +70,7 @@ void draw(){
 
   //test it! draws a li
 
-  if(PLOTTING_ENABLED) plotter.selectPen(1); //pick a pen
+  /* if(PLOTTING_ENABLED) plotter.selectPen(1); //pick a pen */
   /* plotter.write("PU410,596;PD410,4196,410,7796;"); */
 
   /* line(0, height/2, width, height/2); */
@@ -99,18 +100,96 @@ void draw(){
   /* plotter.fillRect(0, 0, 10, 10, 2); */
 
   //test rotate
-  pushMatrix();
-  translate(width/2, height/2);
-  rotate(QUARTER_PI);
-  rect(0, 0, 100, 100);
+  /* pushMatrix(); */
+  /* translate(width/2, height/2); */
+  /* rotate(QUARTER_PI); */
+  /* rect(0, 0, 100, 100); */
 
-  plotter.drawRect(screenX(0,0), screenY(0,0), 100, 100);
-  plotter.drawLine(0, height/2, width, height/2); 
+  /* plotter.drawRect(screenX(0,0), screenY(0,0), 100, 100); */
+  /* plotter.drawLine(0, height/2, width, height/2); */ 
   //when rotating, you will need to use polygon instead of a rect
   //or rotate the plot window?
-  popMatrix();
+  /* popMatrix(); */
   /* plotter.rotatePlotter(0); */
+
+  //need to test
+  //drawpoly with an array
+  /* PVector test[] = new PVector[5]; */
+  /* test[0] = new PVector(0, 0); */
+  /* test[1] = new PVector(100, 50); */
+  /* test[2] = new PVector(150, 100); */ 
+  /* test[3] = new PVector(75, 150); */
+  /* test[4] = new PVector(0, 75); */
+
+  /* plotter.drawPoly(test); */  
+  /* delay(1000); */
+  /* plotter.fillPoly(test, 4, 0.1, 45); */
+  /* ArrayList<PVector> test = new ArrayList<PVector>(); */
+  /* test.add(new PVector(0, 0)); */
+  /* test.add(new PVector(100, 50)); */
+  /* test.add(new PVector(150, 100)); */
+  /* test.add(new PVector(75, 150)); */
+  /* test.add(new PVector(0, 75)); */
+
+  /* plotter.rotatePlotter(90); */
+  /* plotter.drawPoly(test); */  
+  /* delay(1000); */
+  /* plotter.fillPoly(test, 4, 2, 45); //not working */
+   
+  /* plotter.fillPoly(test, 1); */
+
+  //drawpoly with an arraylist
+  //drawlines with an arraylist
+  //fill poly array
+  //fill poly arrayList
+
+  //fill a circle
+  /* ellipse(200, 100, 100, 100); */
+  /* plotter.drawCircle(200, 100, 100); */
+  /* delay(2000); */ 
+  /* plotter.fillCircle(200, 100, 100, 4, 1, 90); */
+  
+  //draw a wedge
+  /* plotter.drawWedge(300, 100, 100, 0, 60); */
+  //fill a wedge
+  /* plotter.fillWedge(300, 100, 100, 0, 60, 4, 2, 45); */
+
+  //line type
+  /* for(int i = 0; i < 7; i++){ */
+  /* plotter.lineType(i, 8); */
+  /* plotter.drawLine(0, i*100, width, i*100); */
+  /* delay(500); */
+  /* } */
+  
+  //draw an arc
+  //procesing
+  /* float cx = width/2; */
+  /* float cy = height/2; */
+
+  /* float angle1 = 0; */
+  /* float angle2 = 1.75 * PI; */
+  
+  /* arc(cx, cy, 500, 500, angle1, angle2); */
+  /* plotter.drawArc(cx, cy, 500, angle1, angle2); //test this shit out! */ 
+
+  //test your math
+  /* float sweep = angle1 - angle2; */
+  /* float sx = cos(angle1) * 100/2 + cx; */ 
+  /* println(sx); */
+
+  /* float sy = sin(angle1) * 100/2 + cy; */ 
+  /* println(sy); */
+   
+  /* ellipse(sx, sy, 100, 100); */ 
+  /* plotter.drawCircle(sx, sy, 100); */
+  //test labels
+  textSize(20);
+  text("hello world", 200, 200);
+  plotter.label("hello world", 0, 0);
   //end the printing
+
+  plotter.drawCircle(width/2, height/2, 50, 10);
+
 }
 
 // set the global paper size

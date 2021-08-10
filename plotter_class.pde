@@ -3,7 +3,7 @@ class Plotter {
   //properties
   Serial port;
   int xMin, yMin, xMax, yMax;
-  float scale; //this is used to keep shit in porportion with proceessing
+  float scale; //this is used to stay in porportion with proceessing
 
   //constructer
   Plotter(Serial _port, int _xMin, int _yMin, int _xMax, int _yMax, float _scale) {
@@ -45,7 +45,6 @@ class Plotter {
   }
 
   //Plotter Utility Methods
-  //select a pen
   void selectPen(int slot) {
     if (slot >= 0 && slot <= 6 ) {
       write("SP" + slot + ";");
@@ -78,20 +77,30 @@ class Plotter {
     String statement = "FT" + model + "," + convert(space) + "," + angle +";";
     return statement;
   }
-   
+
   //line type
-  
-  //rotation plotter coordinate system
-  /*
-  //not working, printer is ignoring this command
-  void rotatePlotter(float theta){ //assume theta is in radians
-  float deg = degrees(theta);
-  println(int(deg));
-  String statement ="RO" + int(deg) + ";";
-  println(statement);
-  write(statement);
+  void lineType(int mode){ //4% space by default
+    String statement = "LT" + mode + ";";
+    if(DEBUG) println(statement);
+    write(statement);
   }
-   */
+
+  void lineType(int mode, float space){ //space is a percent, of what i dont' know
+    String statement = "LT" + mode + "," + space + ";";
+    if(DEBUG) println(statement);
+    write(statement);
+  }
+
+  //rotation plotter coordinate system
+  //right now only works with 90 degrees and messes up p2
+  void rotatePlotter(int theta){
+    /* float deg = int(degrees(theta)); */
+    /* println(int(deg)); */
+    String statement ="RO" + theta  + ";";
+    if(DEBUG) println(statement);
+    write(statement);
+  }
+
 
   //Drawing Commands
 
@@ -104,11 +113,11 @@ class Plotter {
     //pen down, move to end location, put pen up
     statement += "PD" + convertX(xEnd) + "," + convertY(yEnd) + ";PU;";
 
+    if(DEBUG) println(statement);
     write(statement); //send the statement to the plotter
   }
 
-  void drawTo(float x, float y){
-    println("drawTo", x, y);
+  void drawTo(float x, float y){ //
     //problem here???????
     String statement = "PD;PA" + convertX(x) + "," + convertY(y) + ";";
     if(DEBUG) println(statement);
@@ -139,34 +148,118 @@ class Plotter {
     write(statement); //send the statement to the plotter
   }
 
+  void drawLines(ArrayList<PVector> vertices) {
+    PVector origin = vertices.get(0);
+    String statement = "PU;PA"+ convertX(origin.x) + "," + convertY(origin.y) + ";";
+    statement += "PD;"; //clear any polygon
+
+    for (int i = 1; i < vertices.size(); i++) {
+      float x = convertX(vertices.get(i).x);
+      float y = convertY(vertices.get(i).y);
+
+      statement += (x + "," + y);
+
+      //if we aren't at the end, add a comma to add the next location
+      if(i != vertices.size() -1){
+        statement += ","; //
+      }
+    }
+
+    statement += ";PU;"; //close statement and pen up
+
+    if(DEBUG) println(statement);
+    write(statement);
+  }
+
   //draw a circle at x, y, no input resolution given
   void drawCircle(float x, float y, float diam) {
     //convert the given pixel dimension to the printer dimensions
-    float radius = convert(diam/2); 
+    float radius = convert(diam/2);
     //put pen at x,y, draw a circle with specified radius
     String statement = "PA" + convertX(x) + "," + convertY(y) + ";" + "CI" + radius + ";";
     if(DEBUG) println(statement);
-    write(statment);
+    write(statement);
   }
 
   //draw a circle at x, y with input resolution
   void drawCircle(float x, float y, float diam, float res) {
     //convert the given pixel dimension to the printer dimensions
-    float radius = convert(diam/2); 
+    float radius = convert(diam/2);
     //put pen at x,y, draw a circle with specified radius
     String statement = "PA" + convertX(x) + "," + convertY(y) + ";" + "CI" + radius + "," + res + ";";
     if(DEBUG) println(statement);
     write(statement);
   }
 
-  //labels
-  
+  //filltype 1 or 2
+  void fillCircle(float _x, float _y, float diam, int model) {
+    float radius = convert(diam/2);
+    float x = convertX(_x);
+    float y = convertY(_y);
+
+    String statement = "PU;PA" + x + "," + y + ";"; //put pen at circle center xy
+    statement += fillType(model); //setup fill
+    write(statement);
+  }
+
+  //filltype 3 or 4
+  void fillCircle(float _x, float _y, float diam, int model, float space, float angle){
+    float radius = convert(diam/2);
+    float x = convertX(_x);
+    float y = convertY(_y);
+
+    String statement = "PU;PA" + x + "," + y + ";"; //put pen at circle center xy
+    statement += fillType(model,convert(space),angle); //setup fill
+    statement += "WG" + radius + ",0,360;"; //uses the wedge command to draw a circle
+
+    if(DEBUG) println(statement);
+    write(statement);
+  }
+
+  //wedges
+  void drawWedge(float _x, float _y, float _radius, int startAngle, int sweepAngle){
+    float x = convertX(_x);
+    float y = convertY(_y);
+    float radius = convert(_radius);
+
+    String statement = "PU; PA" + x + "," + y + ";";
+    statement += "EW" + radius + "," + startAngle + "," + sweepAngle + ";";
+
+    if(DEBUG) println(statement);
+    write(statement);
+  }
+
+  //fill model 1/2
+  void fillWedge(float _x, float _y, float _radius, int startAngle, int sweepAngle, int model) {
+    float x = convertX(_x);
+    float y = convertY(_y);
+    float radius = convert(_radius);
+
+    String statement = "PU;PA" + x + "," + y + ";"; //put pen at circle center xy
+    statement += fillType(model); //setup fill
+    statement += "WG" + radius + "," + startAngle + "," + sweepAngle + ";";
+
+    if(DEBUG) println(statement);
+    write(statement);
+  }
+
+  //fill model 3/4
+  void fillWedge(float _x, float _y, float _radius, int startAngle, int sweepAngle, int model, float space, float angle) {
+    float x = convertX(_x);
+    float y = convertY(_y);
+    float radius = convert(_radius);
+
+    String statement = "PU;PA" + x + "," + y + ";"; //put pen at circle center xy
+    statement += fillType(model,convert(space),angle); //setup fill
+    statement += "WG" + radius + "," + startAngle + "," + sweepAngle + ";";
+
+    if(DEBUG) println(statement);
+    write(statement);
+  }
 
   //draw a rect
   void drawRect(float x, float y, float w, float h){
-    //ER40,40;
-    //PA60,60;
-    String statment = "";
+    String statement = "";
     float xStart = convertX(x);
     float yStart = convertY(y);
     float xEnd = convert(w);
@@ -174,7 +267,7 @@ class Plotter {
 
     statement += "PU;PA" + xStart + "," + yStart + ";PD;" + "ER" + xEnd + "," + yEnd + ";PU;";
 
-    if(DEBUG) println(statment);
+    if(DEBUG) println(statement);
     write(statement);
   }
 
@@ -193,14 +286,12 @@ class Plotter {
     statement += "PU;" + convertX(xStart) + "," + convertY(yStart) + ";PD;";
     statement += "RR" + xEnd + "," + yEnd + ";PU;";
 
-    if(DEBUG) println(statment);
+    if(DEBUG) println(statement);
     write(statement);
   }
 
   //fill rect, for filltypes 3 and 4 which need a spaceing and angle
   void fillRect(float x, float y, float w, float h, int model, float space, float angle){
-    //ER40,40;
-    //PA60,60;
     //setup the filltype
     String statement = "";
     statement += fillType(model,convert(space),angle);
@@ -214,19 +305,173 @@ class Plotter {
     statement += "PU:" + convertX(xStart) + "," + convertY(yStart) + ";PD";
     statement += "RR" + xEnd + "," + yEnd + ";PU;";
 
-    if(DEBUG) println(statment);
+    if(DEBUG) println(statement);
     write(statement);
   }
 
-    //edge a polygon
-  void drawPoly(PVector [] vertices) {
+  //edge a polygon
+  //note, you could refactor these to draw from last vertext to first, sould save a line of code
+  void drawPoly(PVector[] vertices) {
+    String statement = "PU;PA"+ convertX(vertices[0].x) + "," + convertY(vertices[0].y) + ";";
+    statement += "PM0;PD;"; //clear any polygon
 
+    /* //loop through the rest of the locations, add the x and y coordinate for each to the statement */
+    for (int i = 0; i < vertices.length; i++) {
+      float x = convertX(vertices[i].x);
+      float y = convertY(vertices[i].y);
+
+      statement += ("PA" + x + "," + y + ";");
+    }
+
+    //return to start
+    statement += "PA"+ convertX(vertices[0].x) + "," + convertY(vertices[0].y) + ";";
+    statement += "PU;PM2;EP;"; //pen up, close polygon
+
+    if(DEBUG) println(statement);
+    write(statement); //send the statement to the plotter
   }
 
+  //draw a polygon from an array list of pvectors
   void drawPoly(ArrayList<PVector> vertices) {
+    PVector origin = vertices.get(0);
+    String statement = "PU;PA" + convertX(origin.x) + "," + convertY(origin.y) + ";";
+    statement += "PM0;PD;"; //clear any polygon
+
+    for (PVector v : vertices) {
+      statement += ("PA" + convertX(v.x) + "," + convertY(v.y) + ";");
+    }
+
+    //return to start
+    statement += "PA" + convertX(origin.x) + "," + convertY(origin.y) + ";";
+    statement += "PU;PM2;EP;"; //pen up, close polygon
+
+    if(DEBUG) println(statement);
+    write(statement); //send the statement to the plotter
+  }
+
+  //make a polygon method that takes in a pShape, untested
+  void drawShape(PShape s){
+    PVector origin = s.getVertex(0);
+    String statement = "PU;PA" + convertX(origin.x) + "," + convertY(origin.y) + ";";
+    statement += "PM0;PD;"; //clear any polygon and start polygon mode
+
+    //getVertexCount()  Returns the total number of vertices as an int
+    for (int i = 0; i < s.getVertexCount(); i++) {
+      PVector v = s.getVertex(i); //current vertex
+      statement += ("PA" + convertX(v.x) + "," + convertY(v.y) + ";");
+    }
+
+    //return to start
+    statement += "PA" + convertX(origin.x) + "," + convertY(origin.y) + ";";
+    statement += "PU;PM2;EP;"; //pen up, close polygon
+
+    if(DEBUG) println(statement);
+    write(statement); //send the statement to the plotter
+  }
+
+  //doesn't seem to work with HPGL1 and the 7475A
+  void fillPoly(PVector[] vertices, int model, float space, float angle){
+    //define poly with pen up, then fill?
+    String statement = "PU;PA"+ convertX(vertices[0].x) + "," + convertY(vertices[0].y) + ";";
+
+    statement += "PM0;"; //clear any polygon, don't put pen down?
+
+    for (int i = 1; i < vertices.length; i++) {
+      float x = convertX(vertices[i].x);
+      float y = convertY(vertices[i].y);
+
+      statement += ("PA" + x + "," + y + ";");
+    }
+
+    statement += "PM2;"; //pen up, fill polygon
+    statement += fillType(model, convert(space), angle);
+    statement += "FP;"; //pen up, fill polygon
+
+    if(DEBUG) println(statement);
+    write(statement); //send the statement to the plotter
 
   }
 
-  //draw bounds
-  //make a rect around the page
+  //doesn't seem to work with HPGL1 and the 7475A
+  void fillPoly(ArrayList<PVector> vertices, int model, float space, float angle){
+    //define poly with pen up, then fill?
+    PVector origin = vertices.get(0);
+    String statement = "PU;PA" + convertX(origin.x) + "," + convertY(origin.y) + ";";
+    statement += "PM0;"; //clear any polygon, don't put pen down?
+
+    for (PVector v : vertices) {
+      statement += ("PA" + convertX(v.x) + "," + convertY(v.y) + ";");
+    }
+
+    statement += "PA" + convertX(origin.x) + "," + convertY(origin.y) + ";";
+    statement += "PM1;"; //pen up, fill polygon
+    statement += "PM2;"; //pen up, fill polygon
+    statement += fillType(model, int(convert(space)), angle);
+    statement += "FP;"; //pen up, fill polygon
+
+    if(DEBUG) println(statement);
+    write(statement); //send the statement to the plotter
+
+  }
+
+  //not working with my plotter 
+  void fillPoly(ArrayList<PVector> vertices, int model){
+    //define poly with pen up, then fill?
+    PVector origin = vertices.get(0);
+    String statement = "PU;PA" + convertX(origin.x) + "," + convertY(origin.y) + ";";
+    statement += "PM0;"; //clear any polygon, don't put pen down?
+
+    for (PVector v : vertices) {
+      statement += ("PA" + convertX(v.x) + "," + convertY(v.y) + ";");
+    }
+
+    statement += "PA" + convertX(origin.x) + "," + convertY(origin.y) + ";";
+    statement += "PM1;"; //pen up, fill polygon
+    statement += "PM2;"; //pen up, fill polygon
+    statement += fillType(model);
+    statement += "FP;"; //pen up, fill polygon
+
+    if(DEBUG) println(statement);
+    write(statement); 
+
+  }
+
+  //Arc
+  void drawArc(float _x, float _y, float _size, float _start, float _end) {
+    float x = convertX(_x);
+    float y = convertY(_y);
+    float radius = convert(_size)/2;
+    println(radius);
+    int sweep = int(degrees(_start - _end)); //this is the sweep of the angle 
+
+    //in hpgl present location becomes the start of the sweep
+    //calculate where the pen should start 
+    float yStart = sin(_start) * radius + y; 
+    float xStart = cos(_start) * radius + x; 
+     
+    //send the pen to the start location
+    String statement = "PU;PA" + xStart + "," + yStart + ";PD;";
+    statement += "AA" + x + "," + y + "," + sweep + ";PU;";
+
+    if(DEBUG) println(statement);
+    write(statement);
+  }
+
+  //Labels
+  void label(String text, float _x, float _y){
+    float x = convertX(_x);
+    float y = convertY(_y);
+
+    String statement = "PU;PA" + x + "," + y + ";";
+    statement += "SS;";
+     
+    float tWidth = g.textSize * 0.0264;  //set label width to global text size, pixel to cm conversion
+    float tHeight = tWidth * 1.32; //based on HPGL default, height is 1.32 times the width, so testing that
+    statement += "SI" + tWidth + "," + tHeight + ";"; 
+    statement += "LB" + text + char(3); 
+    statement += "DT;"; 
+
+    if(DEBUG) println(statement);
+    write(statement);
+  }
 }
