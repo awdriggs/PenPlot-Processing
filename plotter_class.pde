@@ -79,7 +79,13 @@ class Plotter {
   }
 
   //line type
-  void lineType(int mode){ //4% space by default
+  void lineType(){ //no params, reset to default 
+    String statement = "LT;";
+    if(DEBUG) println(statement);
+    write(statement);
+  }
+
+  void lineType(int mode){ //space is a percent, of what i dont' know
     String statement = "LT" + mode + ";";
     if(DEBUG) println(statement);
     write(statement);
@@ -100,7 +106,6 @@ class Plotter {
     if(DEBUG) println(statement);
     write(statement);
   }
-
 
   //Drawing Commands
 
@@ -217,10 +222,14 @@ class Plotter {
   }
 
   //wedges
-  void drawWedge(float _x, float _y, float _radius, int startAngle, int sweepAngle){
+  void drawWedge(float _x, float _y, float _dia, float _startAngle, float _sweepAngle){
     float x = convertX(_x);
     float y = convertY(_y);
-    float radius = convert(_radius);
+    float radius = convert(_dia)/2;
+    
+    //assume that angles are in radians
+    int startAngle = int(degrees(_startAngle)); //convert from radians to degrees
+    int sweepAngle = int(degrees(_sweepAngle)); //this is the sweep of the angle 
 
     String statement = "PU; PA" + x + "," + y + ";";
     statement += "EW" + radius + "," + startAngle + "," + sweepAngle + ";";
@@ -230,10 +239,13 @@ class Plotter {
   }
 
   //fill model 1/2
-  void fillWedge(float _x, float _y, float _radius, int startAngle, int sweepAngle, int model) {
+  void fillWedge(float _x, float _y, float _dia, float _startAngle, float _sweepAngle, int model) {
     float x = convertX(_x);
     float y = convertY(_y);
-    float radius = convert(_radius);
+    float radius = convert(_dia)/2;
+
+    int startAngle = int(degrees(_startAngle)); //convert from radians to degrees
+    int sweepAngle = int(degrees(_sweepAngle)); //this is the sweep of the angle 
 
     String statement = "PU;PA" + x + "," + y + ";"; //put pen at circle center xy
     statement += fillType(model); //setup fill
@@ -244,10 +256,13 @@ class Plotter {
   }
 
   //fill model 3/4
-  void fillWedge(float _x, float _y, float _radius, int startAngle, int sweepAngle, int model, float space, float angle) {
+  void fillWedge(float _x, float _y, float _dia, float _startAngle, float _sweepAngle, int model, float space, float angle) {
     float x = convertX(_x);
     float y = convertY(_y);
-    float radius = convert(_radius);
+    float radius = convert(_dia)/2;
+
+    int startAngle = int(degrees(_startAngle)); //convert from radians to degrees
+    int sweepAngle = int(degrees(_sweepAngle)); //this is the sweep of the angle 
 
     String statement = "PU;PA" + x + "," + y + ";"; //put pen at circle center xy
     statement += fillType(model,convert(space),angle); //setup fill
@@ -283,7 +298,7 @@ class Plotter {
     float xEnd = convert(w);
     float yEnd = convert(h);
 
-    statement += "PU;" + convertX(xStart) + "," + convertY(yStart) + ";PD;";
+    statement += "PU;PA" + xStart + "," + yStart + ";PD;";
     statement += "RR" + xEnd + "," + yEnd + ";PU;";
 
     if(DEBUG) println(statement);
@@ -302,7 +317,7 @@ class Plotter {
     float xEnd = convert(w);
     float yEnd = convert(h);
 
-    statement += "PU:" + convertX(xStart) + "," + convertY(yStart) + ";PD";
+    statement += "PU:" + xStart + "," + yStart + ";PD";
     statement += "RR" + xEnd + "," + yEnd + ";PU;";
 
     if(DEBUG) println(statement);
@@ -441,8 +456,8 @@ class Plotter {
     float x = convertX(_x);
     float y = convertY(_y);
     float radius = convert(_size)/2;
-    println(radius);
-    int sweep = int(degrees(_start - _end)); //this is the sweep of the angle 
+
+    int sweep = int(degrees(_end - _start)); //this is the sweep of the angle 
 
     //in hpgl present location becomes the start of the sweep
     //calculate where the pen should start 
@@ -469,7 +484,6 @@ class Plotter {
     float tHeight = tWidth * 1.32; //based on HPGL default, height is 1.32 times the width, so testing that
     statement += "SI" + tWidth + "," + tHeight + ";"; 
     statement += "LB" + text + char(3); 
-    statement += "DT;"; 
 
     if(DEBUG) println(statement);
     write(statement);

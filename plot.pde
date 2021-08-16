@@ -4,12 +4,8 @@ Serial myPort;    // Create object from Serial class
 Plotter plotter;  // Create a plotter object
 int val;          // Data received from the serial port, needed?
 
-//Enable plotting? //toggle for debug
-final boolean PLOTTING_ENABLED = true;
-final boolean DEBUG = true;
-
-//Label
-String label = "TEST";
+final boolean PLOTTING_ENABLED = true; //talk to the pen plotter, you cna use this to only run commands if you are wanting to print
+final boolean DEBUG = true; //will print HPGL commands to console if true
 
 //Plotter dimensions
 int xMin, yMin, xMax, yMax;
@@ -17,179 +13,192 @@ int xMin, yMin, xMax, yMax;
 float scale = 10; //used to keep processing window in proportion to paper size
 //note on scaling. 1px gets scaled to 1 plotter unit. 1 plotter unit = 0.025mm?
 //test this out 10px = 100plots = 2.5mm
+
 void settings(){
   // Set the paper size first, this allows the preview window to be in proportion
   // "A" = letter size, "B" = tabloid size, "A4" = metric A4, "A3" = metric A3
   setPaper("A");
 
-  println("print dimensions", xMin, yMin, xMax, yMax);
-  
+  if(DEBUG) println("print dimensions", xMin, yMin, xMax, yMax);
+
   // Calculate the processing canvas size, proportional to paper size
   float screenWidth = (xMax - xMin)/scale;
   float screenHeight = (yMax - yMin)/scale;
 
   //set the canvas size depending on the paper size that will be used...
   size(int(screenWidth), int(screenHeight));
-  println("screen dimensions", width, height);
+  if(DEBUG) println("screen dimensions", width, height);
 }
 
-void setup(){ //Let's set up ports and plotter 
-  //select a serial port
+void setup(){
   if(PLOTTING_ENABLED){
     println(Serial.list()); //Print all serial ports to the console
-
-    String portName = Serial.list()[5]; //make sure you pick the right one
-    /* String portName = Serial.list()[3]; //make sure you pick the right one */
+    String portName = Serial.list()[5]; //You'll need to play around to see which is the correct port
     println("Plotting to port: " + portName);
 
     myPort = new Serial(this, portName, 9600); //opens the port
 
-    //create a plotter object, let the printer know the papersize and scale
-    plotter = new Plotter(myPort, xMin, yMin, xMax, yMax, scale);
+    plotter = new Plotter(myPort, xMin, yMin, xMax, yMax, scale); //create a plotter object, let the printer know the papersize and scale
   }
+
   noLoop(); //kill the loop, otherwise your print will never end, but maybe that's what you want ;)
 }
 
 void draw(){
   println("drawing");
-  //plotter.write("PU100,100;");
-  //plotter.write("PD500,0,500,500,0,500,0,0;");
-  /* println("50 px test..." + plotter.convertX(50)); */
-  /*
-     plotter.write("CT0;PA0,0;CI5;");
-     plotter.write("CT0;PA100,0;CI5;");
-     plotter.write("CT0;PA100,100;CI5;");
-     plotter.write("CT0;PA0,100;CI5;");
-   */
 
-  //plotter.write("PA0,0;EA100,100;");
-  //plotter.write("SI0.14,0.14;DI0,1;LBzero, zero" + char(3)); //Draw label
+  float locX, locY;
 
-  //plotter.write("SP0;");
-  //plotter.write("PG;");
+  plotter.selectPen(1); //pick a pen, 1-6
 
-  //test it! draws a li
 
-  /* if(PLOTTING_ENABLED) plotter.selectPen(1); //pick a pen */
-  /* plotter.write("PU410,596;PD410,4196,410,7796;"); */
+  //draw some lines
+  for(int i = 0; i < 7; i++){
+  if(i > 0){
+  plotter.lineType(i);
+  }
 
-  /* line(0, height/2, width, height/2); */
-  /* plotter.drawLine(0, height/2, width, height/2); */
-  /* plotter.drawLine(0, 0, width, 0); */
-  /* plotter.drawLine(0, height, width, height); */
-  //line(width/2, 0,width/2, height);
-  //plotter.drawLine(width/2, 0, width/2, height);
+  locX = 10;
+  locY = (i+1)*48;
 
-  //PVector[] list = new PVector[3];
-  //list[0] = new PVector(0, 0);
-  //list[1] = new PVector(width/2, height/2);
-  //list[2] = new PVector(width, 0);
+  line(locX, locY, locX + 240, locY);
+  plotter.drawLine(locX, locY, locX + 240, locY);
+  }
 
-  //plotter.drawLines(list);
+  plotter.lineType(); //resets line to solid
 
-  //testing a circle
-  /* noFill(); */
-  /* ellipse(width/2, height/2, 50, 50); */
-  /* plotter.drawCircle(width/2, height/2, 50, 10); */
+  delay(10000); //if you send to many commands at once the plotter will bug out. Use delay to drip feed the plotter commands
 
-  /* if(PLOTTING_ENABLED) plotter.drawRect(0, 0, 10, 100); */
-  /* if(PLOTTING_ENABLED) plotter.drawRect(0, 0, 250, 250); */
-  /* if(PLOTTING_ENABLED) plotter.fillRect(0, 0, 250, 250, 4, 10, 45); */
-  /* plotter.drawCircle(width, height, 10, 10); */
-  /* plotter.drawCircle(0, 0, 10, 10); */
-  /* plotter.fillRect(0, 0, 10, 10, 2); */
+  //plot some text
+  locX = 260;
+  locY = 0;
 
-  //test rotate
-  /* pushMatrix(); */
-  /* translate(width/2, height/2); */
-  /* rotate(QUARTER_PI); */
-  /* rect(0, 0, 100, 100); */
+  stroke(0);
+  text("hello", locX + 10, locY + 40);
+  plotter.label("hello", locX + 10, locY + 40);
 
-  /* plotter.drawRect(screenX(0,0), screenY(0,0), 100, 100); */
-  /* plotter.drawLine(0, height/2, width, height/2); */ 
-  //when rotating, you will need to use polygon instead of a rect
-  //or rotate the plot window?
-  /* popMatrix(); */
-  /* plotter.rotatePlotter(0); */
-
-  //need to test
-  //drawpoly with an array
-  /* PVector test[] = new PVector[5]; */
-  /* test[0] = new PVector(0, 0); */
-  /* test[1] = new PVector(100, 50); */
-  /* test[2] = new PVector(150, 100); */ 
-  /* test[3] = new PVector(75, 150); */
-  /* test[4] = new PVector(0, 75); */
-
-  /* plotter.drawPoly(test); */  
-  /* delay(1000); */
-  /* plotter.fillPoly(test, 4, 0.1, 45); */
-  /* ArrayList<PVector> test = new ArrayList<PVector>(); */
-  /* test.add(new PVector(0, 0)); */
-  /* test.add(new PVector(100, 50)); */
-  /* test.add(new PVector(150, 100)); */
-  /* test.add(new PVector(75, 150)); */
-  /* test.add(new PVector(0, 75)); */
-
-  /* plotter.rotatePlotter(90); */
-  /* plotter.drawPoly(test); */  
-  /* delay(1000); */
-  /* plotter.fillPoly(test, 4, 2, 45); //not working */
-   
-  /* plotter.fillPoly(test, 1); */
-
-  //drawpoly with an arraylist
-  //drawlines with an arraylist
-  //fill poly array
-  //fill poly arrayList
-
-  //fill a circle
-  /* ellipse(200, 100, 100, 100); */
-  /* plotter.drawCircle(200, 100, 100); */
-  /* delay(2000); */ 
-  /* plotter.fillCircle(200, 100, 100, 4, 1, 90); */
-  
-  //draw a wedge
-  /* plotter.drawWedge(300, 100, 100, 0, 60); */
-  //fill a wedge
-  /* plotter.fillWedge(300, 100, 100, 0, 60, 4, 2, 45); */
-
-  //line type
-  /* for(int i = 0; i < 7; i++){ */
-  /* plotter.lineType(i, 8); */
-  /* plotter.drawLine(0, i*100, width, i*100); */
-  /* delay(500); */
-  /* } */
-  
-  //draw an arc
-  //procesing
-  /* float cx = width/2; */
-  /* float cy = height/2; */
-
-  /* float angle1 = 0; */
-  /* float angle2 = 1.75 * PI; */
-  
-  /* arc(cx, cy, 500, 500, angle1, angle2); */
-  /* plotter.drawArc(cx, cy, 500, angle1, angle2); //test this shit out! */ 
-
-  //test your math
-  /* float sweep = angle1 - angle2; */
-  /* float sx = cos(angle1) * 100/2 + cx; */ 
-  /* println(sx); */
-
-  /* float sy = sin(angle1) * 100/2 + cy; */ 
-  /* println(sy); */
-   
-  /* ellipse(sx, sy, 100, 100); */ 
-  /* plotter.drawCircle(sx, sy, 100); */
-  //test labels
   textSize(20);
-  text("hello world", 200, 200);
-  plotter.label("hello world", 0, 0);
-  //end the printing
+  text("hello", locX + 10, locY + 60);
+  plotter.label("hello", locX + 10, locY + 80);
 
-  plotter.drawCircle(width/2, height/2, 50, 10);
+  textSize(40);
+  text("hello", locX, locY);
+  plotter.label("hello", locX + 10, locY + 120);
 
+  delay(10000);
+
+  //plot some shapes
+  //rects
+  locX = 625; //going to draw rects around this center point
+  locY = 180;
+
+  rect(locX, locY, 100, 100);
+  plotter.drawRect(locX, locY, 100, 100);
+
+  //some fills!
+  fill(0);
+  rect(locX - 40, locY, 40, 40);
+  plotter.drawRect(locX - 40, locY, 40, 40);
+  plotter.fillRect(locX - 40, locY, 40, 40, 1); //mode 1 is solid fill
+
+  fill(120);
+  rect(locX, locY - 80, 40, 80);
+  plotter.drawRect(locX, locY - 80, 40, 80);
+  plotter.fillRect(locX, locY - 80, 40, 80, 3, 2, 45); //mode 3 is hatch, needs a space and angle param
+
+  delay(10000);
+
+  locX = 875; //going to draw cirlces around this center point
+  locY = 180;
+
+  noFill();
+  circle(locX - 75, locY - 75, 150);
+  plotter.drawCircle(locX - 75, locY -75, 150);
+
+  fill(180);
+  circle(locX + 32.5, locY + 75, 150);
+  plotter.drawCircle(locX + 32.5, locY + 75, 150);
+  plotter.fillCircle(locX + 32.5, locY + 75, 150, 3, 4, -45);
+
+  fill(100);
+  circle(locX + 45, locY - 45, 90);
+  plotter.drawCircle(locX + 45, locY - 45, 90);
+  plotter.fillCircle(locX + 45, locY - 45, 90, 4, 3, 90); 
+
+  delay(40000); //fill take forever!
+
+  //polylines
+  PVector[] pointList = new PVector[50];
+
+  //generate some random points
+  for(int i = 0; i < pointList.length; i++){
+    float x = round(random(10, 240));
+    float y = round(random(370, 710));
+
+    pointList[i] = new PVector(x,y);
+  }
+
+  plotter.drawLines(pointList); //will accept an array or arrayList of PVectors
+
+  delay(10000);
+
+  //polygons
+  locX = 625;
+  locY = 540;
+
+  //drawpoly with an array
+  PVector poly[] = new PVector[7];
+  poly[0] = new PVector(locX + 10, locY + 10);
+  poly[1] = new PVector(locX - 100, locY + 125);
+  poly[2] = new PVector(locX - 60, locY - 40);
+  poly[3] = new PVector(locX - 120, locY - 90);
+  poly[4] = new PVector(locX + 110, locY - 70);
+  poly[5] = new PVector(locX + 55, locY + 2);
+  poly[6] = new PVector(locX + 00, locY + 50);
+
+  plotter.drawPoly(poly);  //will take an array or arrayList
+
+  delay(5000);
+
+  //arcs
+  locX = 375;
+  locY = 540;
+
+  float angle1 = 0;
+  float angle2 = 0.75 * PI;
+
+  arc(locX, locY, 225, 225, angle1, angle2);
+  plotter.drawArc(locX, locY, 225, angle1, angle2);
+
+  angle1 = 1.5 * PI;
+  angle2 = TWO_PI;
+  arc(locX, locY, 100, 100, angle1, angle2);
+  plotter.drawArc(locX, locY, 100, angle1, angle2);
+
+  angle1 = 0.5 * PI;
+  angle2 = TWO_PI;
+  arc(locX, locY, 70, 70, angle1, angle2);
+  plotter.drawArc(locX, locY, 70, angle1, angle2);
+
+  delay(10000);
+
+  //wedges
+  locX = 875;
+  locY = 540;
+ 
+  //Note on wedges
+  //first angle is where to start, second is how much to sweep, different than an arc
+  //moves around counter clockwise
+  
+  //refactored, need to test!
+  plotter.drawWedge(locX, locY, 200.0, 0, 0.75 * PI); 
+  plotter.fillWedge(locX, locY, 150.0, 0.75 * PI, QUARTER_PI, 1); //solid fill
+  plotter.fillWedge(locX, locY, 200.0, PI, HALF_PI, 4, 0.75, 45); //will without an edge
+  plotter.drawWedge(locX, locY, 220.0, 1.5 * PI, HALF_PI);
+  plotter.fillWedge(locX, locY, 220.0, 1.5 * PI, HALF_PI, 3, 2, 90);
+
+  // Or you can send HPGL commands direct to the printer
+  // plotter.write("CT0;PA0,0;CI5;"); //draws a circle at the origin
 }
 
 // set the global paper size
