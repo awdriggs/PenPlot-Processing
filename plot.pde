@@ -189,8 +189,6 @@ void draw(){
   //Note on wedges
   //first angle is where to start, second is how much to sweep, different than an arc
   //moves around counter clockwise
-  
-  //refactored, need to test!
   plotter.drawWedge(locX, locY, 200.0, 0, 0.75 * PI); 
   plotter.fillWedge(locX, locY, 150.0, 0.75 * PI, QUARTER_PI, 1); //solid fill
   plotter.fillWedge(locX, locY, 200.0, PI, HALF_PI, 4, 0.75, 45); //will without an edge
