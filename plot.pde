@@ -227,6 +227,22 @@ void setPaper(String size){
 }
 
 void keyPressed(){
-  if(PLOTTING_ENABLED) myPort.stop();
-  exit();
+  //e key will cause errors to be printed
+  if(keyCode == 69){
+    plotter.write("OE;");
+  }
+
+  // escape key will exit
+  if(keyCode == 27){
+    if(PLOTTING_ENABLED) myPort.stop();
+    exit();
+  }
 }
+
+//trying to catch some errors
+String msgs;
+void serialEvent(Serial p) {
+  msgs = p.readString();
+  println("heard from plotter... " + msgs);
+}
+
