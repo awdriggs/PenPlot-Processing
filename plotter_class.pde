@@ -71,7 +71,7 @@ class Plotter {
     String statement = "FT"+model+";";
     return statement;
   }
-
+  
   String fillType(int model, float space, float angle){ //fill type 3(hatching) or 4(crosshatch),
     //assume that angle is given already in degrees
     String statement = "FT" + model + "," + convert(space) + "," + angle +";";
